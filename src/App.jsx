@@ -19,6 +19,7 @@ function App() {
     const { data, error } = await supabase
       .from("TodoList")
       .insert([newToDoData])
+      .select()
       .single();
     if (error) console.log("Error adding todo", error);
     else {
@@ -43,9 +44,30 @@ function App() {
       .update({ isCompleted: !isCompleted })
       .eq("id", id);
 
-    if(error) console.log("Error updating the data");
-    else{
-      fetchToDos();
+    if (error) console.log("Error updating the data");
+    else {
+      // fetchToDos();
+
+      //another way
+      const updatedToDoList = toDoList.map((todo) =>
+        todo.id === id ? { ...todo, isCompleted: !isCompleted } : todo
+      ); //map function is used to update the state
+      setToDoList(updatedToDoList);
+    }
+  };
+
+  //deleting ToDo's
+  const deleteTask = async (id) => {
+    const { data, error } = await supabase
+      .from("TodoList")
+      .delete()
+      .eq("id", id);
+    if (error) console.log("Error deleting the data");
+    else {
+      // fetchToDos();
+
+      //another way
+      setToDoList((prev) => prev.filter((todo) => todo.id !== id));
     }
   };
 
@@ -64,11 +86,11 @@ function App() {
       <ul>
         {toDoList.map((toDo) => (
           <li key={toDo.id}>
-            <span>{toDo.Name}</span>
+            <p>{toDo.Name}</p>
             <button onClick={() => completeTask(toDo.id, toDo.isCompleted)}>
               {toDo.isCompleted ? "Undo" : "Complete task"}
             </button>
-            <button>Delete Task</button>
+            <button onClick={() => deleteTask(toDo.id)}>Delete Task</button>
           </li>
         ))}
       </ul>
